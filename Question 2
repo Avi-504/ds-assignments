@@ -1,0 +1,227 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<limits.h>
+
+struct node
+{
+	int datas;
+	struct node *rc;
+	struct node *l;
+	int h;
+}*root=NULL;
+
+
+int height(struct node *p)//height of the sub tree
+{
+	int lh,rh;
+	if(p&&p->l)
+	{
+		lh=p->l->h;
+	}
+	else
+		lh=0;
+		
+	if(p&&p->r)
+	{
+		rh=p->r->h;
+	}
+	else
+		rh=0;
+
+	return lh>rh?lh+1:rh+1;
+}
+
+
+int  BFactor(struct node *p)//calculating balance factor
+{
+	int lh,rh;
+	if(p&&p->l)
+	{
+		lh=p->l->h;
+	}
+	else
+		lh=0;
+	
+	if(p&&p->r)
+	{
+		rh=p->r->h;
+	}
+	else
+		rh=0;
+
+	return lh-rh;
+}
+
+
+struct node *llrotation(struct node *p)//LEFT LEFT PROBLEM-1 CLOCKWISE ROTATION 
+{
+	struct node *a=p->l;
+	struct node *b=a->r;
+
+	a->r=p;
+	p->l=b;
+
+	if(p==root)
+		root=a;
+
+	p->h=height(p);
+	a->h=height(a);
+	
+	return a;
+}
+
+
+struct node *rrrotation(struct node *p)//RR PROBLEM-1 ANTICLOCKWISE ROTATION
+{
+	struct node *a=p->r;
+	struct node *b=a->l;
+
+	a->l=p;
+	p->r=b;
+
+	if(p==root)
+		root=a;
+
+	p->h=height(p);
+	a->h=height(a);
+	
+	return a;
+}
+
+
+struct node *lrrotation(struct node *p)//LR PROBLEM-1 CLOCKWISE AND 1 ANTICLOCKWISE
+{
+	struct node *a=p->l;
+	struct node *b=a->r;
+
+	
+	a->r=b->l;
+	p->l=b->r;
+
+	b->l=a;
+	b->r=p;
+
+	a->h=height(a);
+	p->h=height(p);
+	b->h=height(b);
+	if(p==root)
+		root=b;
+
+	return b;
+}
+
+
+struct node *rlrotation(struct node *p)//RL PROBLEM-1 ANTICLOCKWISE AND 1 CLOCKWISE ROTAION
+{
+	struct node *a=p->r;
+	struct node *b=a->l;
+
+	
+	a->l=b->r;
+	p->r=b->l;
+
+	b->l=p;
+	b->r=a;
+
+	a->h=height(a);
+	p->h=height(p);
+	b->h=height(b);
+	if(p==root)
+		root=b;
+
+	return b;
+}
+
+
+struct node *Rinsert(struct node *p,int k)
+{
+	struct node *t=NULL;
+	if(p==NULL)
+	{
+		t=(struct node *)malloc(sizeof(struct node));
+		t->datas=k;
+		t->h=1;
+		t->l=t->r=NULL;
+		return t;
+	}
+
+	if(k<p->datas)
+	p->l=Rinsert(p->l,k);
+	else if(k>p->datas)
+	p->r=Rinsert(p->r,k);
+
+	p->h=height(p);
+
+//Now imbalance occcurs if height difference is more than 1 or less than -1
+	if(BFactor(p)==2 && BFactor(p->lchild)==1)//this coresponds to ll so doing clockwise rotation
+	{
+		printf("Performing llrotation on %d\n",p->datas);
+		return llrotation(p);
+	}
+	else
+	{
+		if(BalanceFactor(p)==2 && BalanceFactor(p->lchild)==-1)//this coresponds to lr so doing first anti and then clockwise rotation
+		{
+			printf("Performing lrrotation on %d\n",p->datas);
+			return lrrotation(p);
+		}
+
+		else 
+			{
+				if(BalanceFactor(p)==-2 && BalanceFactor(p->rchild)==-1)//this corresponds to rr so doing anticlockwise rotation
+				{
+					printf("Performing rrrotation on %d\n",p->dat);
+					return rrrotation(p);
+				}
+
+				else 
+					{
+						if(BalanceFactor(p)==-2 && BalanceFactor(p->rchild)==1)//this coresponds to rl so doing first clockwise and then anticlockwise rotation
+						{
+							printf("Performing rlrotation on %d\n",p->dat);
+							return rlrotation(p);
+						}
+					}
+			}
+	} 
+	return p;
+}
+
+
+void preorder(struct node *p)//pre order traversal using recursion
+{
+	if(p)
+	{
+		printf("%d ",p->datas);
+		preorder(p->l);
+		preorder(p->r);
+	}
+	else
+		return;
+}
+
+
+int main()
+{
+	printf("Enter the no. of node u want  to enter in binary search tree\n");
+	int n,x;
+	int i=1;
+	scanf("%d",&n);
+	printf("Enter the elements of binary search tree in preorder\n");
+
+	scanf("%d",&x);
+	root=Rinsert(root,x);
+
+	for(;i<n;i++)
+	{
+		scanf("%d",&x);
+		Rinsert(root,x);
+	}
+	
+	printf("\nHeight of balanced bst tree is\n");
+	printf("%d\n",root->h);
+
+	printf("\nThe preorder traversal of tree is\n");
+	preorder(root);
+	return 0;
+}
